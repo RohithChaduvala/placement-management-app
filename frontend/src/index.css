@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles (optional) */
+body {
+  font-family: 'Inter', sans-serif; /* Example: Use a custom font */
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: bold;
+}
+
+button {
+  transition: all 0.3s ease; /* Add smooth transitions for buttons */
+}
+
+button:hover {
+  transform: scale(1.05); /* Slightly enlarge buttons on hover */
+}
