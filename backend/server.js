@@ -5,9 +5,12 @@ require("dotenv").config();
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:5173", // Vite frontend port
+  credentials: true
+}));
 
-// Database connection
+// MySQL Connection
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
@@ -31,16 +34,9 @@ app.get("/", (req, res) => {
 // Student login route
 app.post("/student-login", (req, res) => {
   const { email, password } = req.body;
-
-  console.log(`Email: ${email}, Password: ${password}`); // Log inputs for debugging
-
   const query = "SELECT * FROM users WHERE email = ? AND password = ?";
   db.execute(query, [email, password], (err, results) => {
-    if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ success: false, message: "Database error", error: err });
-    }
-
+    if (err) return res.status(500).json({ success: false, message: "DB error", error: err });
     if (results.length > 0) {
       res.status(200).json({ success: true, message: "Login successful", user: results[0] });
     } else {
@@ -49,17 +45,12 @@ app.post("/student-login", (req, res) => {
   });
 });
 
-// Fetch student profile after login
+// Student profile route
 app.get("/student/profile/:email", (req, res) => {
   const { email } = req.params;
-
   const query = "SELECT roll_number, name, section, branch FROM student_profiles WHERE email = ?";
   db.execute(query, [email], (err, results) => {
-    if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ message: "Database error", error: err });
-    }
-
+    if (err) return res.status(500).json({ message: "Database error", error: err });
     if (results.length > 0) {
       res.status(200).json({ success: true, profile: results[0] });
     } else {
@@ -68,7 +59,11 @@ app.get("/student/profile/:email", (req, res) => {
   });
 });
 
-// Start server (ALWAYS LAST LINE)
+// Officer routes
+const officerRoutes = require('./routes/officerRoutes');
+app.use('/officer', officerRoutes);
+
+// Start server
 app.listen(5000, () => {
   console.log("Server running on http://localhost:5000");
 });
