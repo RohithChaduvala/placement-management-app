@@ -25,9 +25,13 @@ const OfficerDashboard = () => {
             >
               Post New Job
             </button>
-            <button className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg shadow">
-              View Posted Jobs
-            </button>
+            <button
+  onClick={() => navigate('/officer/view-jobs')}
+  className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg shadow"
+>
+  View Posted Jobs
+</button>
+
             <button className="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-lg shadow">
               Filter Students
             </button>

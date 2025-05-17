@@ -63,6 +63,13 @@ app.get("/student/profile/:email", (req, res) => {
 const officerRoutes = require('./routes/officerRoutes');
 app.use('/officer', officerRoutes);
 
+const facultyRoutes = require('./routes/facultyRoutes');
+app.use('/faculty', facultyRoutes);
+
+app.use("/faculty", require("./routes/facultyRoutes"));
+
+
+
 // Start server
 app.listen(5000, () => {
   console.log("Server running on http://localhost:5000");

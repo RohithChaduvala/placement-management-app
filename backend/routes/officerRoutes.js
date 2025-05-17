@@ -4,7 +4,39 @@ const pool = require('../db/pool');
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcrypt');
 
-// Officer posts a new job
+// ===================
+// Officer Login Route
+// ===================
+router.post('/login', (req, res) => {
+  const { email, password } = req.body;
+  console.log('Login request:', email, password);
+
+  const query = 'SELECT * FROM officers WHERE email = ?';
+  pool.query(query, [email], async (err, results) => {
+    if (err) {
+      console.error('DB error during login:', err);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: 'Officer not found' });
+    }
+
+    const officer = results[0];
+    const isMatch = await bcrypt.compare(password, officer.password);
+    
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    delete officer.password;
+    return res.status(200).json({ message: 'Login successful', officer });
+  });
+});
+
+// ===================
+// Officer Posts a Job
+// ===================
 router.post(
   '/jobs',
   [
@@ -39,20 +71,19 @@ router.post(
       registration_form = []
     } = req.body;
 
-    // Step 1: Find officer_id using email
     const officerQuery = 'SELECT id FROM officers WHERE email = ?';
     pool.query(officerQuery, [email], (err, results) => {
       if (err) {
         console.error('Error fetching officer ID:', err);
         return res.status(500).json({ message: 'Database error fetching officer' });
       }
+
       if (results.length === 0) {
         return res.status(404).json({ message: 'Officer not found' });
       }
 
       const officer_id = results[0].id;
 
-      // Step 2: Insert job post into job_posts
       const insertQuery = `
         INSERT INTO job_posts (
           officer_id, job_title, job_description, required_skills,
@@ -87,5 +118,49 @@ router.post(
   }
 );
 
+// ==============================
+// View Jobs Posted by Officer
+// ==============================
+router.get('/jobs', (req, res) => {
+  const email = req.query.email;
+
+  const query = `
+    SELECT * FROM job_posts 
+    WHERE officer_id = (
+      SELECT id FROM officers WHERE email = ?
+    )
+    ORDER BY created_at DESC
+  `;
+
+  pool.query(query, [email], (err, results) => {
+    if (err) {
+      console.error('Error fetching posted jobs:', err);
+      return res.status(500).json({ message: 'Error retrieving jobs' });
+    }
+
+    res.json({ jobs: results });
+  });
+});
+
+// ==========================
+// Delete Job by Job ID
+// ==========================
+router.delete('/delete-job/:jobId', (req, res) => {
+  const { jobId } = req.params;
+
+  const query = 'DELETE FROM job_posts WHERE id = ?';
+  pool.query(query, [jobId], (err, result) => {
+    if (err) {
+      console.error('Error deleting job:', err);
+      return res.status(500).json({ message: 'Error deleting job' });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Job not found or already deleted' });
+    }
+
+    res.json({ message: 'Job deleted successfully' });
+  });
+});
 
 module.exports = router;

@@ -1,69 +1,78 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { useLocation, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const StudentDashboard = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const email = location?.state?.email;  // Safe access to email from state
+  const [jobs, setJobs] = useState([]);
   const [profile, setProfile] = useState(null);
-  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  const email = localStorage.getItem('email');
 
   useEffect(() => {
-    if (!email) {
-      console.log("Email not found, redirecting to login");
-      navigate("/student-login");
-      return;
-    }
+    if (!email) return navigate('/student-login');
 
-    const fetchProfile = async () => {
+    const fetchProfileAndJobs = async () => {
       try {
-        const encodedEmail = encodeURIComponent(email);
-        const res = await axios.get(`http://localhost:5000/student/profile/${encodedEmail}`);
+        // Step 1: Fetch student profile
+        const res = await axios.get(`http://localhost:5000/student/profile/${encodeURIComponent(email)}`);
+        const student = res.data.profile;
+        setProfile(student);
 
-        console.log(res.data);  // Log profile data
-
-        if (res.data.success) {
-          setProfile(res.data.profile);
+        // Step 2: Only fetch jobs if profile is approved
+        if (student.profile_status === 'Approved' && student.is_access_revoked === 0) {
+          const jobRes = await axios.get(`http://localhost:5000/student/eligible-jobs/${encodeURIComponent(student.roll_number)}`);
+          setJobs(jobRes.data.jobs);
         } else {
-          setError("Profile not found");
+          setJobs([]);
         }
       } catch (err) {
-        console.error(err);
-        setError("Failed to fetch profile");
+        console.error('Error fetching profile or jobs', err);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchProfile();
+    fetchProfileAndJobs();
   }, [email, navigate]);
 
-  if (error) {
-    return <div className="text-center text-red-500 mt-10">{error}</div>;
-  }
-
-  if (!profile) {
-    return <div className="text-center mt-10">Loading profile...</div>;
-  }
+  if (loading) return <p className="p-4">Loading...</p>;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-green-400 to-blue-500">
-      <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-lg">
-        <h2 className="text-3xl font-semibold mb-6 text-center text-gray-800">Student Profile</h2>
-        <div className="space-y-4">
-          <div className="text-xl">
-            <strong className="text-gray-700">Roll Number:</strong> {profile.roll_number}
-          </div>
-          <div className="text-xl">
-            <strong className="text-gray-700">Name:</strong> {profile.name}
-          </div>
-          <div className="text-xl">
-            <strong className="text-gray-700">Section:</strong> {profile.section}
-          </div>
-          <div className="text-xl">
-            <strong className="text-gray-700">Branch:</strong> {profile.branch}
-          </div>
-        </div>
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-semibold">Welcome, {profile?.name}</h2>
+        <button
+          className="bg-gray-200 rounded-full w-10 h-10 text-center text-xl"
+          onClick={() => navigate('/view-student-profile', { state: { email } })}
+        >
+          👤
+        </button>
       </div>
+
+      <h3 className="text-xl font-medium mb-2">Eligible Jobs</h3>
+      {jobs.length === 0 ? (
+        <p>No eligible jobs at the moment.</p>
+      ) : (
+        <ul className="space-y-4">
+          {jobs.map((job) => (
+            <li key={job.id} className="border p-4 rounded shadow">
+              <h4 className="text-lg font-bold">{job.job_title}</h4>
+              <p className="text-sm text-gray-700">{job.job_description}</p>
+              <p><strong>Location:</strong> {job.job_location}</p>
+              <p><strong>Package:</strong> {job.package_offered}</p>
+              <p><strong>Deadline:</strong> {job.application_deadline}</p>
+
+              {job.min_cgpa > profile.cgpa ? (
+                <div className="text-red-500 text-sm text-right mt-2">Not eligible</div>
+              ) : (
+                <button className="mt-2 px-4 py-1 bg-blue-500 text-white rounded">Apply Now</button>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 };

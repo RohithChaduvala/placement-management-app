@@ -1,19 +1,23 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import OfficerNav from './OfficerNav';
+
+const initialFormState = {
+  job_title: '',
+  job_description: '',
+  required_skills: '',
+  eligible_branches: '',
+  eligible_courses: '',
+  min_cgpa: '',
+  application_deadline: '',
+  job_location: '',
+  package_offered: '',
+};
 
 const PostJob = () => {
-  const [formData, setFormData] = useState({
-    job_title: '',
-    job_description: '',
-    required_skills: '',
-    eligible_branches: '',
-    eligible_courses: '',
-    min_cgpa: '',
-    application_deadline: '',
-    job_location: '',
-    package_offered: '',
-  });
-
+  const [formData, setFormData] = useState(initialFormState);
   const officer = JSON.parse(localStorage.getItem('officer'));
 
   const handleChange = (e) => {
@@ -22,26 +26,18 @@ const PostJob = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
-      const response = await axios.post('http://localhost:5000/officer/jobs', {
+      await axios.post('http://localhost:5000/officer/jobs', {
         email: officer.email,
         ...formData,
         registration_form: [],
       });
 
-      alert('Job posted successfully!');
+      toast.success('Job posted successfully!');
+      setFormData(initialFormState); // reset form
     } catch (err) {
-      if (err.response) {
-        console.error('Server responded with error:', err.response.data);
-        alert(`Failed to post job:\n${JSON.stringify(err.response.data, null, 2)}`);
-      } else if (err.request) {
-        console.error('No response from server:', err.request);
-        alert('No response from server. Please check if the backend is running.');
-      } else {
-        console.error('Error', err.message);
-        alert(`Error: ${err.message}`);
-      }
+      console.error(err);
+      toast.error('Failed to post job. Check server or input fields.');
     }
   };
 
@@ -65,10 +61,11 @@ const PostJob = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6 flex justify-center items-start">
+    <div className="min-h-screen bg-gray-100 p-6">
+      <OfficerNav />
       <form
         onSubmit={handleSubmit}
-        className="bg-white shadow-lg rounded-lg p-6 w-full max-w-2xl"
+        className="bg-white shadow-lg rounded-lg p-6 w-full max-w-2xl mx-auto"
       >
         <h2 className="text-2xl font-bold mb-4 text-blue-700">Post New Job</h2>
 
