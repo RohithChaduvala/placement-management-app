@@ -1,6 +1,6 @@
 # Placement Management App
 
-A full-stack web application built to manage student placement activities, including login, student dashboards, profile management, and officer job postings.
+A full-stack web application built to manage student placement activities, including login, dashboards, profile management, and officer job postings.
 
 ---
 
@@ -15,41 +15,65 @@ A full-stack web application built to manage student placement activities, inclu
 
 ## Current Features (Completed)
 
-### Student Login:
-- Students can log in using email and password.  
-- On successful login, they are redirected to their Student Dashboard.
+### ✅ Student Login:
+- Secure login with email and password.
+- On successful login, students are redirected to their personalized Student Dashboard.
 
-### Student Dashboard:
-- Displays basic student information fetched from MySQL:
+### ✅ Student Dashboard:
+- Displays student information from MySQL:
   - Roll Number  
   - Name  
   - Section  
   - Branch  
+- Shows a welcome message with animation and styling.
+- Displays **only approved job postings**.
+- **Eligibility checks** per job based on student branch and CGPA:
+  - ✅ "Apply Now" button if eligible.
+  - ❌ Red "Not eligible" note if not.
+- **View** button on each job card to display full job details.
+- **Profile logo and popup**:
+  - Read-only fields: Email, Roll Number, Branch.
+  - Editable fields: Phone number, CGPA (if needed).
+  - Back button for navigation.
 
-### Server:
-- Express server connected to MySQL database.  
-- Provides APIs for student login and fetching profile details.
+### ✅ Officer Login:
+- Secure login using hashed passwords (bcrypt).
+- JWT-based session/token handling (if configured).
+- Access to Officer Dashboard after login.
 
-### Authentication:
-- Basic email/password verification.  
-- Error handling for wrong credentials or server issues.
+### ✅ Officer Dashboard:
+- Form to post new jobs:
+  - Dropdowns for consistent entry: `eligible_courses`, `eligible_branches`, `job_type`.
+  - Proper placeholders to guide inputs.
+- Job posts are linked with officer_id via email lookup.
+- Displays all previously posted jobs.
 
-### GitHub Deployment:
-- Project initialized with Git.  
-- Code pushed and version-controlled via GitHub.
+### ✅ Server:
+- Node.js Express server with full REST API routes.
+- MySQL connection and queries for students, officers, job posts.
+- API validations using `express-validator`.
 
 ---
 
-## New Features & Improvements for Officer Role (Version 2.0 - 2025-05-16)
+## Version Highlights
 
-- **Officer Login:** Secure login with bcrypt password hashing.  
-- **Job Posting Functionality:** Officers can post new job listings via a detailed form with validation on both frontend and backend.  
-- **Form Field Examples:** Added placeholder examples for all job posting fields to guide correct data entry.  
-- **Database Integration:** Job posts are linked to officers using officer_id fetched via email.  
-- **Enhanced API:** Improved error handling and status responses for job posting API endpoint.  
-- **Frontend-Backend Sync:** Fixed issues with API request URLs and data structure to ensure successful job post submissions.  
-- **Validation:** Added express-validator checks on the backend to validate inputs such as email format and required fields.  
-- **Storage:** Job posts saved in MySQL with proper JSON stringification for registration_form field.
+### 📌 Version 2.1 – 2025-05-19
+
+- ✅ Added **Dropdown Menus** to Officer Job Posting for consistent entries:
+  - Eligible Branches
+  - Courses
+  - Job Type
+- ✅ Form Reset after job post submission.
+- ✅ Toast notifications for success/error while posting jobs.
+- ✅ View all posted jobs in a responsive layout.
+- ✅ Student Dashboard now fetches **only approved jobs** from the database.
+- ✅ Eligibility logic integrated into frontend:
+  - Compares student's branch & CGPA with job's eligibility.
+- ✅ “Apply Now” & “Not Eligible” display per job card.
+- ✅ View button opens full job details.
+- ✅ Profile icon now opens student profile:
+  - Shows profile info (some editable).
+  - Includes back button.
 
 ---
 
@@ -57,41 +81,64 @@ A full-stack web application built to manage student placement activities, inclu
 
 ### Student Dashboard Improvements:
 - Display additional student details (phone number, email, CGPA, etc.).  
-- Show profile completion status.
+- Show profile completion status visually.
 
 ### Student Profile Management:
-- Allow students to edit their profile.  
-- Add Resume upload functionality (accept only PDF files).  
-- Store extra information like LinkedIn, GitHub profiles, Skills, Placement Status.
+- Allow students to edit their profile and update fields.
+- Add Resume upload functionality (PDF only).
+- Store data like:
+  - LinkedIn
+  - GitHub
+  - Skills
+  - Placement Status
 
 ### Backend Enhancements:
-- Create new API endpoints for updating profile and uploading resumes.  
-- Store resume files securely in the server (uploads folder).
+- API endpoints for:
+  - Profile updates  
+  - Resume upload and download  
+- Resume storage in server `/uploads` folder or Azure Cloud.
+
+### Faculty Role (In Progress):
+- Faculty login
+- Approve/reject jobs posted by officers
+- View & update student profiles
+- Revoke student access if needed
 
 ### Database Changes:
-- Create a new table placement_profiles or extend the current profile table.
+- Create or extend tables:
+  - `student_profiles`, `job_posts`, `faculty_accounts`, `officer_accounts`
+  - Add tables for `student_applications`, `resumes`
 
 ### Frontend Enhancements:
-- Form to edit basic and placement-related details.  
-- Progress bar to indicate how much of the profile is complete.  
-- Prevent applications if the profile is incomplete.
+- Profile edit forms with dropdowns, validation
+- Upload buttons for resume (PDF)
+- Profile completion progress bar
 
 ### Deployment:
-- After full development, build the React app and deploy it using GitHub Pages or Vercel.
+- After full development:
+  - Build React app
+  - Deploy using GitHub Pages / Vercel (Frontend)
+  - Deploy backend on Render / Railway / Azure App Services
 
 ---
 
 ## How to Run Locally
 
 ```bash
+# Clone repository
 git clone https://github.com/RohithChaduvala/placement-management-app.git
 
-# Frontend
-cd frontend
+# Frontend Setup
+cd placement-management-app/frontend
 npm install
 npm run dev
 
-# Backend
-cd server
+# Backend Setup
+cd ../backend
 npm install
 node server.js
+
+
+
+Author
+RohithChaduvala
