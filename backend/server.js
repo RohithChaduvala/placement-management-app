@@ -45,20 +45,6 @@ app.post("/student-login", (req, res) => {
   });
 });
 
-// Student profile route
-app.get("/student/profile/:email", (req, res) => {
-  const { email } = req.params;
-  const query = "SELECT roll_number, name, section, branch FROM student_profiles WHERE email = ?";
-  db.execute(query, [email], (err, results) => {
-    if (err) return res.status(500).json({ message: "Database error", error: err });
-    if (results.length > 0) {
-      res.status(200).json({ success: true, profile: results[0] });
-    } else {
-      res.status(404).json({ success: false, message: "Student profile not found" });
-    }
-  });
-});
-
 // Officer routes
 const officerRoutes = require('./routes/officerRoutes');
 app.use('/officer', officerRoutes);
@@ -66,9 +52,8 @@ app.use('/officer', officerRoutes);
 const facultyRoutes = require('./routes/facultyRoutes');
 app.use('/faculty', facultyRoutes);
 
-app.use("/faculty", require("./routes/facultyRoutes"));
-
-
+const studentRoutes = require('./routes/studentRoutes');
+app.use('/student', studentRoutes);
 
 // Start server
 app.listen(5000, () => {

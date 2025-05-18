@@ -33,6 +33,18 @@ const OfficerPostedJobs = () => {
     }
   };
 
+  const getStatusText = (status) => {
+    if (status === 1) return 'Approved';
+    if (status === 0) return 'Pending';
+    return 'Rejected';
+  };
+
+  const getStatusColor = (status) => {
+    if (status === 1) return 'text-green-600';
+    if (status === 0) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+
   useEffect(() => {
     fetchJobs();
   }, []);
@@ -44,7 +56,7 @@ const OfficerPostedJobs = () => {
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
-      <div className="max-w-5xl mx-auto bg-white shadow p-6 rounded-lg">
+      <div className="max-w-6xl mx-auto bg-white shadow p-6 rounded-lg">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold text-blue-700">Jobs You Posted</h2>
           <button
@@ -70,24 +82,30 @@ const OfficerPostedJobs = () => {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full table-auto border-collapse border border-gray-300">
-              <thead className="bg-gray-200">
+              <thead className="bg-gray-200 text-sm">
                 <tr>
                   <th className="border px-4 py-2">Title</th>
+                  <th className="border px-4 py-2">Type</th>
                   <th className="border px-4 py-2">Description</th>
                   <th className="border px-4 py-2">Deadline</th>
                   <th className="border px-4 py-2">Package</th>
                   <th className="border px-4 py-2">Location</th>
+                  <th className="border px-4 py-2">Status</th>
                   <th className="border px-4 py-2">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredJobs.map((job) => (
-                  <tr key={job.id}>
+                  <tr key={job.id} className="text-sm">
                     <td className="border px-4 py-2">{job.job_title}</td>
-                    <td className="border px-4 py-2">{job.job_description}</td>
+                    <td className="border px-4 py-2">{job.job_type || 'N/A'}</td>
+                    <td className="border px-4 py-2 truncate max-w-xs">{job.job_description}</td>
                     <td className="border px-4 py-2">{new Date(job.application_deadline).toLocaleDateString()}</td>
                     <td className="border px-4 py-2">{job.package_offered}</td>
                     <td className="border px-4 py-2">{job.job_location}</td>
+                    <td className={`border px-4 py-2 font-medium ${getStatusColor(job.is_approved)}`}>
+                      {getStatusText(job.is_approved)}
+                    </td>
                     <td className="border px-4 py-2">
                       <button
                         onClick={() => handleDelete(job.id)}

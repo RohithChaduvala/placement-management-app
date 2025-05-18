@@ -36,7 +36,7 @@ const App = () => {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/verify-otp" element={<VerifyOtp />} />
             <Route path="/student-dashboard" element={<StudentDashboard />} /> {/* <-- Added */}
-            <Route path="/student/profile" element={<ViewStudentProfile />} />   {/* <-- Added */}
+            <Route path="/view-student-profile" element={<ViewStudentProfile />} />   {/* <-- Added */}
             <Route path="/officer-dashboard" element={<OfficerDashboard />} />
             <Route path="/officer/post-job" element={<PostJob />} />
             <Route path="/officer/view-jobs" element={<OfficerPostedJobs />} />

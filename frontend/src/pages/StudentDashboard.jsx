@@ -7,25 +7,28 @@ const StudentDashboard = () => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-
   const email = localStorage.getItem('email');
 
   useEffect(() => {
-    if (!email) return navigate('/student-login');
+    if (!email) {
+      navigate('/student-login');
+      return;
+    }
 
     const fetchProfileAndJobs = async () => {
       try {
-        // Step 1: Fetch student profile
         const res = await axios.get(`http://localhost:5000/student/profile/${encodeURIComponent(email)}`);
         const student = res.data.profile;
         setProfile(student);
 
-        // Step 2: Only fetch jobs if profile is approved
-        if (student.profile_status === 'Approved' && student.is_access_revoked === 0) {
-          const jobRes = await axios.get(`http://localhost:5000/student/eligible-jobs/${encodeURIComponent(student.roll_number)}`);
+        if (
+          student.profile_status?.toLowerCase() === 'approved' &&
+          Number(student.is_access_revoked) === 0
+        ) {
+          const jobRes = await axios.get(`http://localhost:5000/student/all-approved-jobs`);
           setJobs(jobRes.data.jobs);
         } else {
-          setJobs([]);
+          setJobs([]); // Profile not approved or access revoked
         }
       } catch (err) {
         console.error('Error fetching profile or jobs', err);
@@ -45,32 +48,61 @@ const StudentDashboard = () => {
         <h2 className="text-2xl font-semibold">Welcome, {profile?.name}</h2>
         <button
           className="bg-gray-200 rounded-full w-10 h-10 text-center text-xl"
-          onClick={() => navigate('/view-student-profile', { state: { email } })}
+          onClick={() => {
+            localStorage.setItem('studentEmail', email);
+            navigate('/view-student-profile', { state: { email } });
+          }}
         >
           👤
         </button>
       </div>
 
-      <h3 className="text-xl font-medium mb-2">Eligible Jobs</h3>
+      <h3 className="text-xl font-medium mb-2">All Approved Jobs</h3>
       {jobs.length === 0 ? (
-        <p>No eligible jobs at the moment.</p>
+        <p>No approved jobs available at the moment.</p>
       ) : (
         <ul className="space-y-4">
-          {jobs.map((job) => (
-            <li key={job.id} className="border p-4 rounded shadow">
-              <h4 className="text-lg font-bold">{job.job_title}</h4>
-              <p className="text-sm text-gray-700">{job.job_description}</p>
-              <p><strong>Location:</strong> {job.job_location}</p>
-              <p><strong>Package:</strong> {job.package_offered}</p>
-              <p><strong>Deadline:</strong> {job.application_deadline}</p>
+          {jobs.map((job) => {
+            const eligibleBranches = job.eligible_branches
+              ?.split(',')
+              .map(b => b.trim().toLowerCase()) || [];
 
-              {job.min_cgpa > profile.cgpa ? (
-                <div className="text-red-500 text-sm text-right mt-2">Not eligible</div>
-              ) : (
-                <button className="mt-2 px-4 py-1 bg-blue-500 text-white rounded">Apply Now</button>
-              )}
-            </li>
-          ))}
+            const eligibleCourses = job.eligible_courses
+              ?.split(',')
+              .map(c => c.trim().toLowerCase()) || [];
+
+            const isEligible =
+              parseFloat(profile.cgpa) >= parseFloat(job.min_cgpa) &&
+              eligibleBranches.includes(profile.branch.toLowerCase()) &&
+              eligibleCourses.includes(profile.course.toLowerCase());
+
+            return (
+              <li key={job.id} className="border p-4 rounded shadow">
+                <h4 className="text-lg font-bold">{job.job_title}</h4>
+                <p className="text-sm text-gray-700">{job.job_description}</p>
+
+                <div className="text-sm text-gray-600 mt-2 space-y-1">
+                  <p><strong>Type:</strong> {job.job_type}</p>
+                  <p><strong>Location:</strong> {job.job_location}</p>
+                  <p><strong>Package:</strong> {job.package_offered}</p>
+                  <p><strong>Deadline:</strong> {new Date(job.application_deadline).toLocaleDateString()}</p>
+                  <p><strong>Min CGPA Required:</strong> {job.min_cgpa}</p>
+                  <p><strong>Eligible Branches:</strong> {job.eligible_branches}</p>
+                  <p><strong>Eligible Courses:</strong> {job.eligible_courses}</p>
+                </div>
+
+                {isEligible ? (
+                  <button className="mt-3 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                    Apply Now
+                  </button>
+                ) : (
+                  <div className="text-red-500 text-sm text-right mt-2">
+                    You are not eligible for this job
+                  </div>
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>
