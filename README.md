@@ -198,9 +198,7 @@ A full-stack web application to manage student placement activities for colleges
 - Apply to jobs directly from dashboard.
 - Track application status.
 
-### Analytics & Azure Integration:
-- Push placement stats and data to Azure for dashboard insights.
-- Use Power BI or low-cost alternatives for graphs.
+
 
 ---
 
