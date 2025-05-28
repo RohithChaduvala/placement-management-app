@@ -1,6 +1,6 @@
 # Placement Management App
 
-<<<<<<< HEAD
+<<<<<<< 
 A full-stack web application built to manage student placement activities, including login, dashboards, profile management, and officer job postings.
 =======
 A full-stack web application to manage student placement activities for colleges. It includes role-based access for Students, Officers, and Faculty (in-progress), with powerful backend integration and real-time data management.
