@@ -8,7 +8,7 @@ A full-stack web application to manage student placement activities for colleges
 
 ---
 
-## Tech Stack
+## Tech Stack-
 
 - **Frontend:** React.js, Tailwind CSS  
 - **Backend:** Node.js, Express.js  
